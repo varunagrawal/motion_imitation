@@ -496,10 +496,23 @@ class A1(minitaur.Minitaur):
     # as the angles.
     return joint_position_idxs, joint_angles.tolist()
 
+  def GetFootOrientationsInBaseFrame(self):
+    """Get the robot's foot orientation in the base frame."""
+    foot_orientation = super().GetFootOrientationsInBaseFrame()
+    return foot_orientation
+
   def GetFootPositionsInBaseFrame(self):
     """Get the robot's foot position in the base frame."""
-    motor_angles = self.GetMotorAngles()
-    return foot_positions_in_base_frame(motor_angles)
+    # Erwin's old code. Using the super class function gives the same result upto numerical accuracy.
+    # motor_angles = self.GetMotorAngles()
+    # foot_positions_old = foot_positions_in_base_frame(motor_angles)
+
+    foot_positions = super().GetFootPositionsInBaseFrame()
+
+    # This assertion proves that Erwin's function and the super class function are equivalent.
+    # assert(np.allclose(foot_positions, foot_positions_old, atol=1e-3))
+
+    return foot_positions
 
   def ComputeJacobian(self, leg_id):
     """Compute the Jacobian for a given leg."""

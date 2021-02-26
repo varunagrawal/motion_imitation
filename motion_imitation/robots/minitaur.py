@@ -725,6 +725,18 @@ class Minitaur(object):
       contacts.append(contact_1 or contact_2)
     return contacts
 
+  def GetFootOrientationsInBaseFrame(self):
+    """Get the robot's foot orientation in the base frame."""
+    assert len(self._foot_link_ids) == self.num_legs
+    foot_orientations = []
+    for foot_id in self.GetFootLinkIDs():
+      foot_orientations.append(
+          kinematics.link_orientation_in_base_frame(
+              robot=self,
+              link_id=foot_id,
+          ))
+    return np.array(foot_orientations)
+    
   def GetFootPositionsInBaseFrame(self):
     """Get the robot's foot position in the base frame."""
     assert len(self._foot_link_ids) == self.num_legs
