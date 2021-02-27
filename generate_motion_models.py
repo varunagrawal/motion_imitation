@@ -1,12 +1,12 @@
 """Script to sample data and generate motion models."""
 
 import argparse
+from copy import deepcopy
 
 import gtsam
 import numpy as np
 
-
-np.set_printoptions(linewidth=180)
+np.set_printoptions(linewidth=180, suppress=True, precision=8)
 
 
 def parse_arguments():
@@ -53,10 +53,18 @@ def get_between_pose(foot, start, end, header):
     # end_base_pose = get_base_pose(end, header)
     # end_foot_pose = body_to_world_frame(end_base_pose, end_foot_pose)
     # end frame in the start frame
-    return start_foot_pose.logmap(end_foot_pose)
+    # return start_foot_pose.logmap(end_foot_pose)
+    between_vector = np.empty(6)
+    between_vector[0:3] = start_foot_pose.rotation().logmap(
+        end_foot_pose.rotation())
+    between_vector[3:6] = end_foot_pose.translation() - \
+        start_foot_pose.translation()
+    return between_vector
+    # return end_foot_pose.translation() - start_foot_pose.translation()
 
 
 def get_base_pose(data, header):
+    """Get the base pose in the world frame."""
     tx = data[header.index("tx")]
     ty = data[header.index("ty")]
     tz = data[header.index("tz")]
@@ -75,21 +83,21 @@ def body_to_world_frame(wTb, bTl):
     return wTl
 
 
-def sample_trajectories(data, header, feet=("FR", "FL", "RR", "RL"), contacts=("00", "01", "10", "11")):
+def sample_trajectories(data, header, feet, contacts):
     foot_trajectories = {
         contact_seq: np.empty((0, 6)) for contact_seq in contacts
     }
 
     contact_counts = {foot: np.zeros(len(contacts)) for foot in feet}
-    feet_trajectories = {key: foot_trajectories for key in feet}
+    feet_trajectories = {key: deepcopy(foot_trajectories) for key in feet}
 
     base_positions = np.empty((0, 6))
 
-    for start, end in zip(data[:-1], data[1:]):
+    for idx, (start, end) in enumerate(zip(data[:-1], data[1:])):
+        # print(idx)
         start_base_pose = get_base_pose(start, header)
         end_base_pose = get_base_pose(end, header)
         base_between_pose = start_base_pose.logmap(end_base_pose)
-        # base_between_pose = end_base_pose.logmap(start_base_pose)
         base_positions = np.vstack((base_positions, base_between_pose))
 
         for foot in feet:
@@ -102,7 +110,11 @@ def sample_trajectories(data, header, feet=("FR", "FL", "RR", "RL"), contacts=("
             contact_counts[foot][contacts.index(contact_sequence)] += 1
 
     for foot, counts in contact_counts.items():
-        print(foot, counts)
+        counts = counts.reshape((2, 2))
+        counts = counts / counts.sum(axis=1)[:, None]
+        print(np.linalg.eig(counts))
+        print(foot, "\n", counts)
+        print("\n\n")
 
     return base_positions, feet_trajectories
 
@@ -123,22 +135,26 @@ def main():
 
     feet = ("FR", "FL", "RR", "RL")
     contacts = ("00", "01", "10", "11")
+
     base_trajectories, feet_trajectories = sample_trajectories(
         data, header, feet=feet, contacts=contacts)
 
     print("base mean\n",
           gtsam.Pose3.Expmap(np.mean(base_trajectories, axis=0)))
-    print("base variance\n",
-          gtsam.Pose3.Expmap(np.var(base_trajectories, axis=0)))
+    print("base stddev\n",
+          gtsam.Pose3.Expmap(np.std(base_trajectories, axis=0)))
     print("\n\n")
-    for foot in feet[:1]:
+    for foot in feet:
         for contact in contacts:
             contact_samples = feet_trajectories[foot][contact]
+            # print(contact_samples)
             print(foot, contact)
             mu = np.mean(contact_samples, axis=0)
-            tau = np.var(contact_samples, axis=0)
-            print("mean\n", gtsam.Pose3.Expmap(mu))
-            print("variance\n", gtsam.Pose3.Expmap(tau))
+            tau = np.std(contact_samples, axis=0)
+            cov = np.cov(contact_samples.T)
+            print("mean\n", gtsam.Rot3.Expmap(mu[0:3]), mu[3:6])
+            print("stddev\n", gtsam.Rot3.Expmap(tau[0:3]), tau[3:6])
+            # print("covariance matrix\n", cov)
             print("\n\n")
 
 
