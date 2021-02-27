@@ -496,6 +496,11 @@ class A1(minitaur.Minitaur):
     # as the angles.
     return joint_position_idxs, joint_angles.tolist()
 
+  def GetFootPositionsAndOrientationsInWorldFrame(self):
+    """Get the robot's foot position and orientation in the world frame."""
+    foot_position, foot_orientation = super().GetFootPositionsAndOrientationsInWorldFrame()
+    return foot_position, foot_orientation
+
   def GetFootPositionsAndOrientationsInBaseFrame(self):
     """Get the robot's foot position and orientation in the robot's base frame."""
     foot_position, foot_orientation = super().GetFootPositionsAndOrientationsInBaseFrame()

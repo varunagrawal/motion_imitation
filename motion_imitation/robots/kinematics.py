@@ -66,6 +66,28 @@ def joint_angles_from_link_position(
   return joint_angles
 
 
+def link_position_and_orientation_in_world_frame(
+    robot: typing.Any,
+    link_id: int,
+):
+  """Computes the link's position and orientation in the world frame.
+
+  Args:
+    robot: A robot instance.
+    link_id: The link to calculate its relative position.
+
+  Returns:
+    The position and orientation of the link.
+  """
+  base_position, base_orientation = robot.GetBasePosition(), robot.GetBaseOrientation()
+  inverse_translation, inverse_rotation = robot.pybullet_client.invertTransform(
+      base_position, base_orientation)
+
+  link_state = robot.pybullet_client.getLinkState(robot.quadruped, link_id)
+  link_position = link_state[0]
+  link_orientation = link_state[1]
+  return np.array(link_position), np.array(link_orientation)
+
 def link_position_and_orientation_in_base_frame(
     robot: typing.Any,
     link_id: int,

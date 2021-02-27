@@ -159,8 +159,8 @@ def trajectory_function(t):
     #                 (0, -vy, 0, 0), (0, 0, 0, 0), (0, 0, 0, wz))
 
     # time_points, speed_points = standing()
-    # time_points, speed_points = square()
-    time_points, speed_points = straight_line()
+    time_points, speed_points = square()
+    # time_points, speed_points = straight_line()
 
     speed = scipy.interpolate.interp1d(time_points,
                                        speed_points,
@@ -256,6 +256,8 @@ def main(argv):
                   time_step=0.002,
                   action_repeat=1)
 
+    # p.changeDynamics(robot.quadruped, -1, lateralFriction=1)
+
     controller = _setup_controller(robot)
 
     controller.reset()
@@ -278,7 +280,9 @@ def main(argv):
     timesteps = []
     base_position, base_rotation, base_vels, actions = [], [], [], []
     imu_rates, joint_angles, true_joint_angles = [], [], []
-    foot_positions, foot_orientations, foot_contacts = [], [], []
+    foot_positions_base, foot_orientations_base = [], []
+    foot_positions_world, foot_orientations_world = [], []
+    foot_contacts = []
 
     for motor_name, motor_id in robot._joint_name_to_id.items():
         if motor_id in robot._motor_id_list:
@@ -310,8 +314,12 @@ def main(argv):
 
         # Foot positions are with respect to the base frame
         foot_position, foot_orientation = robot.GetFootPositionsAndOrientationsInBaseFrame()
-        foot_positions.append(foot_position)
-        foot_orientations.append(foot_orientation)
+        foot_positions_base.append(foot_position)
+        foot_orientations_base.append(foot_orientation)
+
+        foot_position, foot_orientation = robot.GetFootPositionsAndOrientationsInWorldFrame()
+        foot_positions_world.append(foot_position)
+        foot_orientations_world.append(foot_orientation)
 
         foot_contacts.append(np.array(robot.GetFootContacts()))
 
@@ -338,8 +346,10 @@ def main(argv):
                  imu_rates=imu_rates,
                  joint_angles=joint_angles,
                  true_joint_angles=true_joint_angles,
-                 foot_positions=foot_positions,
-                 foot_orientations=foot_orientations,
+                 foot_positions_base=foot_positions_base,
+                 foot_orientations_base=foot_orientations_base,
+                 foot_positions_world=foot_positions_world,
+                 foot_orientations_world=foot_orientations_world,
                  foot_contacts=foot_contacts)
         logging.info("logged to: {}".format(logdir))
 

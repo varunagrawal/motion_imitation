@@ -25,8 +25,8 @@ def convert(datafile, output_file):
     timesteps = data["timesteps"]
 
     # true_joint_angles = data["true_joint_angles"]
-    foot_positions = data["foot_positions"]
-    foot_orientations = data["foot_orientations"]
+    foot_positions = data["foot_positions_world"]
+    foot_orientations = data["foot_orientations_world"]
     foot_contacts = data["foot_contacts"]
 
     # these are specific to the A1 robot
