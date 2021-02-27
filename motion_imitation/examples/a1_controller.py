@@ -83,45 +83,70 @@ _INIT_LEG_STATE = (
 )
 
 
-def straight_line(vx=1.0, vy=0.2, wz=1.6):
-    """Generate a simple straight line trajectory"""
+def standing(vx=0, vy=0, wz=0):
+    """The robot is standing in place"""
     time_points = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,)
-    speed_points = ((0, 0, 0, 0),  # Get set
-                    # Walk forward
-                    (vx, 0, 0, 0), (vx, 0, 0, 0),
-                    (vx, 0, 0, 0), (vx, 0, 0, 0),
-                    # Pause
-                    (0, 0, 0, 0), (0, 0, 0, 0),
-                    # Walk forward
-                    (vx, 0, 0, 0), (vx, 0, 0, 0),
-                    (vx, 0, 0, 0),
-                    # Pause again
-                    (0, 0, 0, 0),
-                    # Walk again
-                    (vx, 0, 0, 0), (vx, 0, 0, 0), (vx, 0, 0, 0),
-                    # and relax
-                    (0, 0, 0, 0), (0, 0, 0, 0))
+    speed_points = (
+        # Walk forward
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        # Pause
+        (0, 0, 0, 0),
+        # Walk forward
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        # Pause again
+        (0, 0, 0, 0),
+        # Walk again
+        (vx, 0, 0, 0), (vx, 0, 0, 0), (vx, 0, 0, 0),
+        # and relax
+        (0, 0, 0, 0), (0, 0, 0, 0))
     return time_points, speed_points
 
 
-def square(vx=1.0, vy=0.2, wz=1.6):
+def straight_line(vx=1.0, vy=0.2, wz=1.6):
+    """Generate a simple straight line trajectory"""
+    time_points = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,)
+    speed_points = (
+        # Walk forward
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        # Pause
+        (0, 0, 0, 0),
+        # Walk forward
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        # Pause again
+        (0, 0, 0, 0),
+        # Walk again
+        (vx, 0, 0, 0), (vx, 0, 0, 0), (vx, 0, 0, 0),
+        # and relax
+        (0, 0, 0, 0), (0, 0, 0, 0))
+    return time_points, speed_points
+
+
+def square(vx=1.0, vy=0, wz=1.6):
     """
     Generate square trajectory, starting and ending at origin.
     """
 
     time_points = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,)
-    speed_points = ((0, 0, 0, 0),  # Get set
-                    # Walk forward and then turn left
-                    (vx, 0, 0, 0), (vx, 0, 0, 0),
-                    (0, 0, 0, wz), (0, 0, 0, wz),
-                    # Walk forward and then turn left
-                    (vx, 0, 0, 0), (vx, 0, 0, 0),
-                    (0, 0, 0, wz), (0, 0, 0, wz),
-                    # Walk forward and then turn left
-                    (vx, 0, 0, 0), (vx, 0, 0, 0),
-                    (0, 0, 0, wz), (0, 0, 0, wz),
-                    (vx, 0, 0, 0), (vx, 0, 0, 0),  # Walk to start point
-                    (0, 0, 0, 0))  # and relax.
+    speed_points = (
+        # Get set
+        (0, 0, 0, 0),
+        # Walk forward and then turn left
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (0, 0, 0, wz), (0, 0, 0, wz),
+        # Walk forward and then turn left
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (0, 0, 0, wz), (0, 0, 0, wz),
+        # Walk forward and then turn left
+        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (0, 0, 0, wz), (0, 0, 0, wz),
+        (vx, 0, 0, 0), (vx, 0, 0, 0),  # Walk to start point
+        (0, 0, 0, 0))  # and relax.
 
     return time_points, speed_points
 
@@ -132,6 +157,8 @@ def trajectory_function(t):
     # time_points = (0, 5, 10, 15, 20, 25, 30)
     # speed_points = ((0, 0, 0, 0), (0, 0, 0, wz), (vx, 0, 0, 0), (0, 0, 0, -wz),
     #                 (0, -vy, 0, 0), (0, 0, 0, 0), (0, 0, 0, wz))
+
+    # time_points, speed_points = standing()
     # time_points, speed_points = square()
     time_points, speed_points = straight_line()
 
@@ -247,6 +274,8 @@ def main(argv):
 
     start_time = robot.GetTimeSinceReset()
     current_time = start_time
+
+    timesteps = []
     base_position, base_rotation, base_vels, actions = [], [], [], []
     imu_rates, joint_angles, true_joint_angles = [], [], []
     foot_positions, foot_orientations, foot_contacts = [], [], []
@@ -261,7 +290,7 @@ def main(argv):
         start_time_wall = time.time()
         # Updates the controller behavior parameters.
         lin_speed, ang_speed, e_stop = command_function(current_time)
-        # print(lin_speed)
+
         if e_stop:
             logging.info("E-stop kicked, exiting...")
             break
@@ -270,22 +299,24 @@ def main(argv):
         controller.update()
 
         hybrid_action, _ = controller.get_action()
+
+        timesteps.append(current_time)
         base_position.append(np.array(robot.GetBasePosition()))
         # each orientation is a quaternion
         base_rotation.append(np.array(robot.GetBaseOrientation()))
         base_vels.append(np.array(robot.GetBaseVelocity()))
         imu_rates.append(np.array(robot.GetBaseRollPitchYawRate()))
         joint_angles.append(np.array(robot.GetMotorAngles()))
-        foot_contacts.append(np.array(robot.GetFootContacts()))
 
         # Foot positions are with respect to the base frame
-        foot_positions.append(
-            np.array(robot.GetFootPositionsInBaseFrame()))
-        foot_orientations.append(
-            np.array(robot.GetFootOrientationsInBaseFrame()))
+        foot_position, foot_orientation = robot.GetFootPositionsAndOrientationsInBaseFrame()
+        foot_positions.append(foot_position)
+        foot_orientations.append(foot_orientation)
 
-        true_joint_angles.append(
-            np.array(robot.GetAllSensors()[2].get_observation()))
+        foot_contacts.append(np.array(robot.GetFootContacts()))
+
+        # true_joint_angles.append(
+        #     np.array(robot.GetAllSensors()[2].get_observation()))
 
         actions.append(hybrid_action)
         robot.Step(hybrid_action)
@@ -300,6 +331,7 @@ def main(argv):
     if FLAGS.logdir:
         np.savez(os.path.join(logdir, 'action.npz'),
                  action=actions,
+                 timesteps=timesteps,
                  base_position=base_position,
                  base_rotation=base_rotation,
                  base_vels=base_vels,

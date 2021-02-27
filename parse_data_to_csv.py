@@ -22,6 +22,7 @@ def convert(datafile, output_file):
     base_vels = data["base_vels"]
     imu_rates = data["imu_rates"]
     joint_angles = data["joint_angles"]
+    timesteps = data["timesteps"]
 
     # true_joint_angles = data["true_joint_angles"]
     foot_positions = data["foot_positions"]
@@ -44,7 +45,7 @@ def convert(datafile, output_file):
 
     with open(output_file, "w") as file:
         # write the header
-        file.write("tx,ty,tz,rw,rx,ry,rz,vx,vy,vz,wx,wy,wz,ax,ay,az,")
+        file.write("time,tx,ty,tz,rw,rx,ry,rz,vx,vy,vz,wx,wy,wz,ax,ay,az,")
         for foot in feet:
             for d in ["x", "y", "z"]:
                 file.write(foot + "_t" + d + ",")
@@ -52,7 +53,7 @@ def convert(datafile, output_file):
             for d in ["w", "x", "y", "z"]:
                 file.write(foot + "_r" + d + ",")
         for foot in feet:
-            file.write(foot + "contact,")
+            file.write(foot + "_contact,")
         file.write(",".join(joint_names))
 
         file.write("\n")
@@ -66,7 +67,7 @@ def convert(datafile, output_file):
                 acc = (base_vels[idx] - base_vels[idx-1])/dt
 
             # join the data as a single row
-            datum = np.hstack((base_position[idx], base_rotation[idx],
+            datum = np.hstack((timesteps[idx], base_position[idx], base_rotation[idx],
                                base_vels[idx], imu_rates[idx], acc,
                                foot_positions[idx].reshape(12),
                                foot_orientations[idx].reshape(16),
