@@ -23,23 +23,23 @@ from mpc_controller import \
     torque_stance_leg_controller_quadprog as torque_stance_leg_controller
 from pybullet_utils import bullet_client
 
-currentdir = os.path.dirname(os.path.abspath(
-    inspect.getfile(inspect.currentframe())))
+currentdir = os.path.dirname(
+    os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(os.path.dirname(currentdir))
 os.sys.path.insert(0, parentdir)
-
 
 #from mpc_controller import torque_stance_leg_controller
 #import mpc_osqp
 
-
 flags.DEFINE_string("logdir", "logs", "where to log trajectories.")
 flags.DEFINE_bool("show_gui", True, "whether to show GUI.")
-flags.DEFINE_float("max_time_secs", 17., "maximum time to run the robot.")
+flags.DEFINE_float("max_time_secs", 5., "maximum time to run the robot.")
 flags.DEFINE_string("video_name", "a1_walking",
                     "name of video file (without extension)")
-flags.DEFINE_string("log_file", "sample_log",
-                    "name of the log file")
+flags.DEFINE_string("log_file", "sample_log", "name of the log file")
+flags.DEFINE_string(
+    "trajectory", "straight",
+    "Trajectory option, choose from {standing, straight, diagonal, square}")
 FLAGS = flags.FLAGS
 
 _NUM_SIMULATION_ITERATION_STEPS = 300
@@ -85,45 +85,139 @@ _INIT_LEG_STATE = (
 
 def standing(vx=0, vy=0, wz=0):
     """The robot is standing in place"""
-    time_points = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,)
+    time_points = (
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+    )
     speed_points = (
         # Walk forward
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
         # Pause
         (0, 0, 0, 0),
         # Walk forward
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
         (vx, 0, 0, 0),
         # Pause again
         (0, 0, 0, 0),
         # Walk again
-        (vx, 0, 0, 0), (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
         # and relax
-        (0, 0, 0, 0), (0, 0, 0, 0))
+        (0, 0, 0, 0),
+        (0, 0, 0, 0))
     return time_points, speed_points
 
 
 def straight_line(vx=1.0, vy=0.2, wz=1.6):
     """Generate a simple straight line trajectory"""
-    time_points = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,)
+    time_points = (
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+    )
     speed_points = (
         # Walk forward
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
         # Pause
         (0, 0, 0, 0),
         # Walk forward
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
         (vx, 0, 0, 0),
         # Pause again
         (0, 0, 0, 0),
         # Walk again
-        (vx, 0, 0, 0), (vx, 0, 0, 0), (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
         # and relax
-        (0, 0, 0, 0), (0, 0, 0, 0))
+        (0, 0, 0, 0),
+        (0, 0, 0, 0))
+    return time_points, speed_points
+
+
+def diagonal_line(vx=1.0, vy=1.0, wz=1.6):
+    """Generate a simple straight line trajectory"""
+    time_points = (
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+    )
+    speed_points = (
+        # Walk forward
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        # Pause
+        (0, 0, 0, 0),
+        # Walk forward
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        # Pause again
+        (0, 0, 0, 0),
+        # Walk again
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        (vx, vy, 0, 0),
+        # and relax
+        (0, 0, 0, 0),
+        (0, 0, 0, 0))
     return time_points, speed_points
 
 
@@ -132,35 +226,66 @@ def square(vx=1.0, vy=0, wz=1.6):
     Generate square trajectory, starting and ending at origin.
     """
 
-    time_points = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,)
+    time_points = (
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+    )
     speed_points = (
         # Get set
         (0, 0, 0, 0),
         # Walk forward and then turn left
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
-        (0, 0, 0, wz), (0, 0, 0, wz),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (0, 0, 0, wz),
+        (0, 0, 0, wz),
         # Walk forward and then turn left
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
-        (0, 0, 0, wz), (0, 0, 0, wz),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (0, 0, 0, wz),
+        (0, 0, 0, wz),
         # Walk forward and then turn left
-        (vx, 0, 0, 0), (vx, 0, 0, 0),
-        (0, 0, 0, wz), (0, 0, 0, wz),
-        (vx, 0, 0, 0), (vx, 0, 0, 0),  # Walk to start point
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),
+        (0, 0, 0, wz),
+        (0, 0, 0, wz),
+        (vx, 0, 0, 0),
+        (vx, 0, 0, 0),  # Walk to start point
         (0, 0, 0, 0))  # and relax.
 
     return time_points, speed_points
 
 
-def trajectory_function(t):
-    """Creates a speed profile based on time to generate the trajectory."""
+def trajectory_function(t, option="straight"):
+    """Creates a speed profile based on time t to generate the trajectory."""
 
     # time_points = (0, 5, 10, 15, 20, 25, 30)
     # speed_points = ((0, 0, 0, 0), (0, 0, 0, wz), (vx, 0, 0, 0), (0, 0, 0, -wz),
     #                 (0, -vy, 0, 0), (0, 0, 0, 0), (0, 0, 0, wz))
 
-    # time_points, speed_points = standing()
-    time_points, speed_points = square()
-    # time_points, speed_points = straight_line()
+    # standing, straight, diagonal, square
+    if option == "standing":
+        time_points, speed_points = standing()
+    elif option == "straight":
+        time_points, speed_points = straight_line()
+    elif option == "square":
+        time_points, speed_points = square()
+    elif option == "diagonal":
+        time_points, speed_points = diagonal_line(
+        )  # causes robot to flip over
 
     speed = scipy.interpolate.interp1d(time_points,
                                        speed_points,
@@ -231,7 +356,9 @@ def main(argv):
     else:
         p = bullet_client.BulletClient(connection_mode=pybullet.DIRECT)
     p.setPhysicsEngineParameter(numSolverIterations=30)
-    p.setTimeStep(0.001)
+
+    TIMESTEP = 0.001
+    p.setTimeStep(TIMESTEP)
     p.setGravity(0, 0, -9.81)
     p.setPhysicsEngineParameter(enableConeFriction=0)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -241,11 +368,11 @@ def main(argv):
 
     sensors = [
         robot_sensors.IMUSensor(),
-        robot_sensors.MotorAngleSensor(
-            num_motors=a1.NUM_MOTORS, noisy_reading=True),
-        robot_sensors.MotorAngleSensor(
-            num_motors=a1.NUM_MOTORS, noisy_reading=False, name="TrueMotorAngles"),
-
+        robot_sensors.MotorAngleSensor(num_motors=a1.NUM_MOTORS,
+                                       noisy_reading=True),
+        robot_sensors.MotorAngleSensor(num_motors=a1.NUM_MOTORS,
+                                       noisy_reading=False,
+                                       name="TrueMotorAngles"),
     ]
     # Construct robot class:
     robot = a1.A1(p,
@@ -253,10 +380,8 @@ def main(argv):
                   motor_control_mode=robot_config.MotorControlMode.HYBRID,
                   enable_action_interpolation=False,
                   reset_time=2,
-                  time_step=0.002,
-                  action_repeat=1)
-
-    # p.changeDynamics(robot.quadruped, -1, lateralFriction=1)
+                  time_step=TIMESTEP,
+                  action_repeat=5)
 
     controller = _setup_controller(robot)
 
@@ -279,7 +404,7 @@ def main(argv):
 
     timesteps = []
     base_position, base_rotation, base_vels, actions = [], [], [], []
-    imu_rates, joint_angles, true_joint_angles = [], [], []
+    omega_b, joint_angles, true_joint_angles = [], [], []
     foot_positions_base, foot_orientations_base = [], []
     foot_positions_world, foot_orientations_world = [], []
     foot_contacts = []
@@ -293,7 +418,8 @@ def main(argv):
         start_time_robot = current_time
         start_time_wall = time.time()
         # Updates the controller behavior parameters.
-        lin_speed, ang_speed, e_stop = command_function(current_time)
+        lin_speed, ang_speed, e_stop = command_function(
+            current_time, FLAGS.trajectory)
 
         if e_stop:
             logging.info("E-stop kicked, exiting...")
@@ -309,15 +435,17 @@ def main(argv):
         # each orientation is a quaternion
         base_rotation.append(np.array(robot.GetBaseOrientation()))
         base_vels.append(np.array(robot.GetBaseVelocity()))
-        imu_rates.append(np.array(robot.GetBaseRollPitchYawRate()))
+        omega_b.append(np.array(robot.GetTrueBaseRollPitchYawRate()))
         joint_angles.append(np.array(robot.GetMotorAngles()))
 
         # Foot positions are with respect to the base frame
-        foot_position, foot_orientation = robot.GetFootPositionsAndOrientationsInBaseFrame()
+        foot_position, foot_orientation = \
+            robot.GetFootPositionsAndOrientationsInBaseFrame()
         foot_positions_base.append(foot_position)
         foot_orientations_base.append(foot_orientation)
 
-        foot_position, foot_orientation = robot.GetFootPositionsAndOrientationsInWorldFrame()
+        foot_position, foot_orientation = \
+            robot.GetFootPositionsAndOrientationsInWorldFrame()
         foot_positions_world.append(foot_position)
         foot_orientations_world.append(foot_orientation)
 
@@ -343,7 +471,7 @@ def main(argv):
                  base_position=base_position,
                  base_rotation=base_rotation,
                  base_vels=base_vels,
-                 imu_rates=imu_rates,
+                 omega_b=omega_b,
                  joint_angles=joint_angles,
                  true_joint_angles=true_joint_angles,
                  foot_positions_base=foot_positions_base,
@@ -351,7 +479,8 @@ def main(argv):
                  foot_positions_world=foot_positions_world,
                  foot_orientations_world=foot_orientations_world,
                  foot_contacts=foot_contacts)
-        logging.info("logged to: {}".format(logdir))
+        logging.info("========= logged {0} to: {1}".format(
+            len(timesteps), logdir))
 
 
 if __name__ == "__main__":
