@@ -12,16 +12,16 @@ import pybullet  # pytype:disable=import-error
 import pybullet_data
 import scipy.interpolate
 from absl import app, flags, logging
-from motion_imitation.envs.sensors import robot_sensors, sensor
+from pybullet_utils import bullet_client
+
+from motion_imitation.envs.sensors import robot_sensors
 from motion_imitation.robots import a1, robot_config
-from motion_imitation.robots.gamepad import gamepad_reader
 from mpc_controller import com_velocity_estimator
 from mpc_controller import gait_generator as gait_generator_lib
 from mpc_controller import (locomotion_controller, openloop_gait_generator,
                             raibert_swing_leg_controller)
 from mpc_controller import \
     torque_stance_leg_controller_quadprog as torque_stance_leg_controller
-from pybullet_utils import bullet_client
 
 currentdir = os.path.dirname(
     os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -83,26 +83,9 @@ _INIT_LEG_STATE = (
 )
 
 
-def standing(vx=0, vy=0, wz=0):
+def standing(vx=0, vy=0, wz=0, t=16):
     """The robot is standing in place"""
-    time_points = (
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-    )
+    time_points = range(t)
     speed_points = (
         # Walk forward
         (vx, 0, 0, 0),
@@ -129,26 +112,9 @@ def standing(vx=0, vy=0, wz=0):
     return time_points, speed_points
 
 
-def straight_line(vx=1.0, vy=0.2, wz=1.6):
+def straight_line(vx=1.0, vy=0.2, wz=1.6, t=16):
     """Generate a simple straight line trajectory"""
-    time_points = (
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-    )
+    time_points = range(t)
     speed_points = (
         # Walk forward
         (vx, 0, 0, 0),
@@ -175,26 +141,9 @@ def straight_line(vx=1.0, vy=0.2, wz=1.6):
     return time_points, speed_points
 
 
-def diagonal_line(vx=1.0, vy=1.0, wz=1.6):
+def diagonal_line(vx=1.0, vy=1.0, wz=1.6, t=16):
     """Generate a simple straight line trajectory"""
-    time_points = (
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-    )
+    time_points = range(t)
     speed_points = (
         # Walk forward
         (vx, vy, 0, 0),
@@ -221,29 +170,12 @@ def diagonal_line(vx=1.0, vy=1.0, wz=1.6):
     return time_points, speed_points
 
 
-def square(vx=1.0, vy=0, wz=1.6):
+def square(vx=1.0, vy=0, wz=1.6, t=16):
     """
     Generate square trajectory, starting and ending at origin.
     """
 
-    time_points = (
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-    )
+    time_points = range(t)
     speed_points = (
         # Get set
         (0, 0, 0, 0),
@@ -284,8 +216,8 @@ def trajectory_function(t, option="straight"):
     elif option == "square":
         time_points, speed_points = square()
     elif option == "diagonal":
-        time_points, speed_points = diagonal_line(
-        )  # causes robot to flip over
+        # causes robot to flip over
+        time_points, speed_points = diagonal_line()
 
     speed = scipy.interpolate.interp1d(time_points,
                                        speed_points,
@@ -407,6 +339,7 @@ def main(argv):
     omega_b, joint_angles, true_joint_angles = [], [], []
     foot_positions_base, foot_orientations_base = [], []
     foot_positions_world, foot_orientations_world = [], []
+    lower_link_positions_world, lower_link_orientations_world = [], []
     foot_contacts = []
 
     for motor_name, motor_id in robot._joint_name_to_id.items():
@@ -449,6 +382,11 @@ def main(argv):
         foot_positions_world.append(foot_position)
         foot_orientations_world.append(foot_orientation)
 
+        lower_link_position, lower_link_orientation = \
+            robot.GetLowerLinkPositionsAndOrientationsInWorldFrame()
+        lower_link_positions_world.append(lower_link_position)
+        lower_link_orientations_world.append(lower_link_orientation)
+
         foot_contacts.append(np.array(robot.GetFootContacts()))
 
         # true_joint_angles.append(
@@ -464,6 +402,22 @@ def main(argv):
             time.sleep(expected_duration - actual_duration)
         print("actual_duration =", actual_duration)
 
+    base_rotation = np.asarray(base_rotation)
+    foot_orientations_world = np.asarray(foot_orientations_world)
+    foot_orientations_base = np.asarray(foot_orientations_base)
+    lower_link_orientations_world = np.asarray(lower_link_orientations_world)
+    # Move the w value of the rotation quaternion to the first position.
+    old_idxes, new_idxes = [0, 1, 2, 3], [3, 0, 1, 2]
+    base_rotation[:, old_idxes] = base_rotation[:, new_idxes]
+    foot_orientations_world[:, :,
+                            old_idxes] = foot_orientations_world[:, :,
+                                                                 new_idxes]
+    foot_orientations_base[:, :, old_idxes] = foot_orientations_base[:, :,
+                                                                     new_idxes]
+    lower_link_orientations_world[:, :,
+                                  old_idxes] = lower_link_orientations_world[:, :,
+                                                                             new_idxes]
+
     if FLAGS.logdir:
         np.savez(os.path.join(logdir, 'action.npz'),
                  action=actions,
@@ -478,6 +432,8 @@ def main(argv):
                  foot_orientations_base=foot_orientations_base,
                  foot_positions_world=foot_positions_world,
                  foot_orientations_world=foot_orientations_world,
+                 lower_link_orientations_world=lower_link_orientations_world,
+                 lower_link_positions_world=lower_link_positions_world,
                  foot_contacts=foot_contacts)
         logging.info("========= logged {0} to: {1}".format(
             len(timesteps), logdir))

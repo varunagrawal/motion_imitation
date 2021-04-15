@@ -31,6 +31,7 @@ from motion_imitation.robots import laikago_motor
 from motion_imitation.robots import minitaur
 from motion_imitation.robots import robot_config
 from motion_imitation.envs import locomotion_gym_config
+from motion_imitation.robots import kinematics
 
 NUM_MOTORS = 12
 NUM_LEGS = 4
@@ -496,6 +497,20 @@ class A1(minitaur.Minitaur):
     # as the angles.
     return joint_position_idxs, joint_angles.tolist()
 
+  def GetLowerLinkPositionsAndOrientationsInWorldFrame(self):
+    """Get the robot's lower link position and orientation in the world frame."""
+    assert len(self._lower_link_ids) == self.num_legs
+    foot_positions, foot_orientations = [], []
+    for link_id in self._lower_link_ids:
+      foot_position, foot_orientation = kinematics.link_position_and_orientation_in_world_frame(
+          robot=self,
+          link_id=link_id,
+      )
+      foot_orientations.append(foot_orientation)
+      foot_positions.append(foot_position)
+
+    return np.array(foot_positions), np.array(foot_orientations)
+
   def GetFootPositionsAndOrientationsInWorldFrame(self):
     """Get the robot's foot position and orientation in the world frame."""
     foot_position, foot_orientation = super().GetFootPositionsAndOrientationsInWorldFrame()
@@ -513,7 +528,8 @@ class A1(minitaur.Minitaur):
 
   def GetFootPositionsInBaseFrame(self):
     """Get the robot's foot position in the base frame."""
-    # Erwin's old code. Using the super class function gives the same result upto numerical accuracy.
+    # Erwin's old code.
+    # Using the super class function gives the same result upto numerical accuracy.
     # motor_angles = self.GetMotorAngles()
     # foot_positions_old = foot_positions_in_base_frame(motor_angles)
 
