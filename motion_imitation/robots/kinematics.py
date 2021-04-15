@@ -15,12 +15,11 @@
 
 """The inverse kinematic utilities."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
+
+import typing
 
 import numpy as np
-import typing
 
 _IDENTITY_ORIENTATION = (0, 0, 0, 1)
 

@@ -65,22 +65,22 @@ MINITAUR_DOFS_PER_LEG = 2
 
 
 def MapToMinusPiToPi(angles):
-  """Maps a list of angles to [-pi, pi].
+    """Maps a list of angles to [-pi, pi].
 
-  Args:
-    angles: A list of angles in rad.
+    Args:
+      angles: A list of angles in rad.
 
-  Returns:
-    A list of angle mapped to [-pi, pi].
-  """
-  mapped_angles = copy.deepcopy(angles)
-  for i in range(len(angles)):
-    mapped_angles[i] = math.fmod(angles[i], TWO_PI)
-    if mapped_angles[i] >= math.pi:
-      mapped_angles[i] -= TWO_PI
-    elif mapped_angles[i] < -math.pi:
-      mapped_angles[i] += TWO_PI
-  return mapped_angles
+    Returns:
+      A list of angle mapped to [-pi, pi].
+    """
+    mapped_angles = copy.deepcopy(angles)
+    for i in range(len(angles)):
+        mapped_angles[i] = math.fmod(angles[i], TWO_PI)
+        if mapped_angles[i] >= math.pi:
+            mapped_angles[i] -= TWO_PI
+        elif mapped_angles[i] < -math.pi:
+            mapped_angles[i] += TWO_PI
+    return mapped_angles
 
 
 class Minitaur(object):
@@ -249,7 +249,7 @@ class Minitaur(object):
     """Steps simulation."""
     if self._enable_action_filter:
       action = self._FilterAction(action)
-    if control_mode==None:
+    if control_mode is None:
       control_mode = self._motor_control_mode
     for i in range(self._action_repeat):
       proc_action = self.ProcessAction(action, i)
@@ -736,7 +736,7 @@ class Minitaur(object):
       )
       foot_orientations.append(foot_orientation)
       foot_positions.append(foot_position)
-          
+
     return np.array(foot_positions), np.array(foot_orientations)
 
   def GetFootPositionsAndOrientationsInBaseFrame(self):
@@ -750,9 +750,9 @@ class Minitaur(object):
       )
       foot_orientations.append(foot_orientation)
       foot_positions.append(foot_position)
-          
+
     return np.array(foot_positions), np.array(foot_orientations)
-  
+
   def GetFootOrientationsInBaseFrame(self):
     """Get the robot's foot orientation in the base frame."""
     assert len(self._foot_link_ids) == self.num_legs
@@ -764,7 +764,7 @@ class Minitaur(object):
               link_id=foot_id,
           ))
     return np.array(foot_orientations)
-    
+
   def GetFootPositionsInBaseFrame(self):
     """Get the robot's foot position in the base frame."""
     assert len(self._foot_link_ids) == self.num_legs
